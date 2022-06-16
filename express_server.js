@@ -110,7 +110,11 @@ app.get("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {
   const user_id = req.cookies["user_id"];
   const templateVars = { user: users[user_id] };
-  // console.log(templateVars.user);
+
+  if(!user_id) {
+    res.redirect("/login")
+  }
+
   res.render("urls_new", templateVars);
 });
 
@@ -124,23 +128,21 @@ app.get("/login", (req, res) => {
 app.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  // console.log(users)
 
   for (let user in users) {
     if (email === users[user].email) {
-      // console.log(users[user])
+     
       if (password === users[user].password) {
         const id = users[user].id;
-        // console.log(user)
         res.cookie("user_id", id);
         res.redirect("/urls");
         return;
+
       } else {
         res.status(403).send("Incorrect Password.");
         return;
       }
     }
-
   }
   res.status(403).send("That email does not match our records.");
 });
@@ -153,10 +155,15 @@ app.post("/logout", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  // console.log(req.body);  // Log the POST request body to the console
+  const user_id =req.body["user_id"]
   const longURL = req.body['longURL'];
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = longURL;
+
+  if(!user_id) {
+    res.status(403).send("403 Forbidden - You do not have permission to access this site. Please login.\n")
+  }
+
   res.redirect(`/urls/${shortURL}`);
 });
 
