@@ -63,7 +63,7 @@ const urlsForUser = (userID) => {
     }
   }
   return urls;
-}
+};
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}`);
@@ -96,7 +96,6 @@ app.post("/register", (req, res) => {
   for (let user in users) {
     if (email === users[user].email) {
       res.status(400).send("That email already exists. Please sign in, or create an account with another email address.");
-
       return;
     }
   }
@@ -110,23 +109,14 @@ app.post("/register", (req, res) => {
   return;
 });
 
-
-
 app.get("/urls", (req, res) => {
   const userID = req.cookies["user_id"];
   if (!userID) {
-    
-    return res.redirect("/error")
+    return res.redirect("/error");
   }
 
-  // const urls = {};
-  // for (let url in urlDatabase) {
-  //   if (urlDatabase[url].userID === userID) {
-  //     urls[url] = urlDatabase[url];
-  //   }
-  // }
-  const urls = urlsForUser(userID)
-  // console.log(urls)
+  const urls = urlsForUser(userID);
+
   const templateVars = {
     urls,
     user: users[userID]
@@ -172,7 +162,7 @@ app.post("/login", (req, res) => {
       }
     }
   }
-  res.status(403).send("That email does not match our records.");
+  res.redirect('/register')
 });
 
 app.post("/logout", (req, res) => {
@@ -188,7 +178,7 @@ app.post("/urls", (req, res) => {
 
   const { longURL } = req.body;
   if (!longURL) {
-    return res.status(400).send("You need to enter a valid longURL")
+    return res.status(400).send("You need to enter a valid longURL");
   }
 
   const shortURL = generateRandomString();
@@ -227,13 +217,13 @@ app.post("/urls/:shortURL", (req, res) => {
 
   const { longURL } = req.body;
   if (!longURL) {
-    return res.status(400).send("You need to enter a valid longURL")
+    return res.status(400).send("You need to enter a valid longURL");
   }
-  
-  const { shortURL } = req.params
-  const urlBelongsToUser = urlDatabase[shortURL].userID === userID
+
+  const { shortURL } = req.params;
+  const urlBelongsToUser = urlDatabase[shortURL].userID === userID;
   if (!urlBelongsToUser) {
-    return res.status(403).send("You do not have permission to edit this URL.")
+    return res.status(403).send("You do not have permission to edit this URL.");
   }
 
   urlDatabase[shortURL] = { longURL, userID };
