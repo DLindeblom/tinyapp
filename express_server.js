@@ -115,11 +115,18 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
+app.get("/login", (req, res) => {
+  const user_id = req.cookies["user_id"];
+  const templateVars = { user: users[user_id] };
+  res.render("urls_login", templateVars);
+});
+
 app.post("/login", (req, res) => {
-  // console.log(req.body)
-  const user = users["user_id"];
+
   res.redirect("/urls");
 });
+
+
 
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id");
