@@ -10,13 +10,19 @@ app.set("view engine", "ejs");
 
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://google.com"
+  "b2xVn2": {
+    longURL: "http://www.lighthouselabs.ca",
+    userID: ""
+  },
+  "9sm5xK": {
+    longURL: "http://google.com",
+    userID: ""
+  }
 };
 
 const users = {
   id: {
-    id: ["randomID"],
+    id: "randomID",
     email: "email",
     password: "password"
   }
@@ -61,13 +67,9 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-
 app.get("/register", (req, res) => {
-  const user_id = req.cookies["user_id"];
-  const templateVars = { user: users[user_id] };
+  const userID = req.cookies["user_id"];
+  const templateVars = { user: users[userID] };
   res.render("urls_register", templateVars);
 });
 
@@ -94,33 +96,48 @@ app.post("/register", (req, res) => {
     password: password
   };
   res.cookie("user_id", users[randomID].id),
-  res.redirect("/urls"), console.log(users);
+    res.redirect("/urls");
   return;
 });
 
 
 
 app.get("/urls", (req, res) => {
-  // console.log(req.cookies)
-  const user_id = req.cookies["user_id"];
-  const templateVars = { urls: urlDatabase, user: users[user_id] };
+  const userID = req.cookies["user_id"];
+  if (!userID) {
+    <a>Please Login</a>
+    return res.redirect("/login");
+  }
+
+  const urls = {};
+  for (let url in urlDatabase) {
+    if (urlDatabase[url].userID === userID) {
+      urls[url] = urlDatabase[url];
+    }
+  }
+  // console.log(urls)
+  const templateVars = {
+    urls,
+    user: users[userID]
+  };
   res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
-  const user_id = req.cookies["user_id"];
-  const templateVars = { user: users[user_id] };
+  const userID = req.cookies["user_id"];
+  const templateVars = { user: users[userID] };
 
-  if(!user_id) {
-    res.redirect("/login")
+  if (!userID) {
+    res.redirect("/login");
+    return;
   }
 
-  res.render("urls_new", templateVars);
+  return res.render("urls_new", templateVars);
 });
 
 app.get("/login", (req, res) => {
-  const user_id = req.cookies["user_id"];
-  const templateVars = { user: users[user_id] };
+  const userID = req.cookies["user_id"];
+  const templateVars = { user: users[userID] };
 
   res.render("urls_login", templateVars);
 });
@@ -131,7 +148,7 @@ app.post("/login", (req, res) => {
 
   for (let user in users) {
     if (email === users[user].email) {
-     
+
       if (password === users[user].password) {
         const id = users[user].id;
         res.cookie("user_id", id);
@@ -147,35 +164,38 @@ app.post("/login", (req, res) => {
   res.status(403).send("That email does not match our records.");
 });
 
-
-
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id");
   res.redirect("/login");
 });
 
 app.post("/urls", (req, res) => {
-  const user_id =req.body["user_id"]
-  const longURL = req.body['longURL'];
-  const shortURL = generateRandomString();
-  urlDatabase[shortURL] = longURL;
-
-  if(!user_id) {
-    res.status(403).send("403 Forbidden - You do not have permission to access this site. Please login.\n")
+  const userID = req.cookies["user_id"];
+  if (!userID) {
+    return res.status(403).send("403 Forbidden - You do not have permission to access this site. Please login.\n");
   }
 
+  const { longURL } = req.body;
+  if (!longURL) {
+    return res.status(400).send("You need to enter a valid longURL")
+  }
+
+  const shortURL = generateRandomString();
+  urlDatabase[shortURL] = { longURL, userID };
+
+  console.log(urlDatabase);
   res.redirect(`/urls/${shortURL}`);
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  const longURL = urlDatabase[req.params.shortURL].longURL;
   res.redirect(longURL);
 });
 
 app.get("/urls/:shortURL", (req, res) => {
-  const user_id = req.cookies["user_id"];
-  const longURL = urlDatabase[req.params.shortURL];
-  const templateVars = { shortURL: req.params.shortURL, longURL, user: users[user_id] };
+  const userID = req.cookies["user_id"];
+  const longURL = urlDatabase[req.params.shortURL].longURL;
+  const templateVars = { shortURL: req.params.shortURL, longURL, user: users[userID] };
   res.render("urls_show", templateVars);
 });
 
@@ -184,10 +204,25 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect("/urls");
 });
 
-app.post("/urls/:id", (req, res) => {
-  const newURL = req.body["longURL"];
-  // console.log(req.params)
-  urlDatabase[req.params.id] = newURL;
-  res.redirect("/urls");
+app.post("/urls/:shortURL", (req, res) => {
+  const userID = req.cookies["user_id"];
+  if (!userID) {
+    return res.status(401).send("401 Unauthorized = You do not have permission to access this site. Please login.\n");
+  }
+
+  const { longURL } = req.body;
+  if (!longURL) {
+    return res.status(400).send("You need to enter a valid longURL")
+  }
+  
+  const { shortURL } = req.params
+  const urlBelongsToUser = urlDatabase[shortURL].userID === userID
+  if (!urlBelongsToUser) {
+    return res.status(403).send("You do not have permission to edit this URL.")
+  }
+
+  urlDatabase[shortURL] = { longURL, userID };
+
+  res.redirect(`/urls/${shortURL}`);
 });
 
