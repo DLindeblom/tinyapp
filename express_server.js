@@ -54,6 +54,16 @@ const generateUserId = () => {
   return string;
 };
 
+const urlsForUser = (userID) => {
+
+  const urls = {};
+  for (let url in urlDatabase) {
+    if (urlDatabase[url].userID === userID) {
+      urls[url] = urlDatabase[url];
+    }
+  }
+  return urls;
+}
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}`);
@@ -105,22 +115,23 @@ app.post("/register", (req, res) => {
 app.get("/urls", (req, res) => {
   const userID = req.cookies["user_id"];
   if (!userID) {
-    <a>Please Login</a>
-    return res.redirect("/login");
+    
+    return res.redirect("/error")
   }
 
-  const urls = {};
-  for (let url in urlDatabase) {
-    if (urlDatabase[url].userID === userID) {
-      urls[url] = urlDatabase[url];
-    }
-  }
+  // const urls = {};
+  // for (let url in urlDatabase) {
+  //   if (urlDatabase[url].userID === userID) {
+  //     urls[url] = urlDatabase[url];
+  //   }
+  // }
+  const urls = urlsForUser(userID)
   // console.log(urls)
   const templateVars = {
     urls,
     user: users[userID]
   };
-  res.render("urls_index", templateVars);
+  return res.render("urls_index", templateVars);
 });
 
 app.get("/urls/new", (req, res) => {
@@ -128,7 +139,7 @@ app.get("/urls/new", (req, res) => {
   const templateVars = { user: users[userID] };
 
   if (!userID) {
-    res.redirect("/login");
+    res.redirect("/error");
     return;
   }
 
@@ -156,7 +167,7 @@ app.post("/login", (req, res) => {
         return;
 
       } else {
-        res.status(403).send("Incorrect Password.");
+        res.redirect("/error");
         return;
       }
     }
@@ -200,6 +211,10 @@ app.get("/urls/:shortURL", (req, res) => {
 });
 
 app.post("/urls/:shortURL/delete", (req, res) => {
+  const userID = req.cookies["user_id"];
+  if (!userID) {
+    return res.status(401).send("401 Unauthorized = You do not have permission to access this site. Please login.\n");
+  }
   delete urlDatabase[req.params.shortURL];
   res.redirect("/urls");
 });
@@ -225,4 +240,14 @@ app.post("/urls/:shortURL", (req, res) => {
 
   res.redirect(`/urls/${shortURL}`);
 });
+
+app.get("/error", (req, res) => {
+  const userID = req.cookies["user_id"];
+  const templateVars = { user: users[userID] };
+
+  res.render("urls_error", templateVars);
+});
+
+
+
 
