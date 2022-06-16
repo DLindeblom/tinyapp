@@ -77,15 +77,14 @@ app.post("/register", (req, res) => {
   const password = req.body.password;
 
   if (password === "" || email === "") {
-    res.status(400).send("Please fill out all required fields.")
+    res.status(400).send("Please fill out all required fields.");
     return;
   }
 
   for (let user in users) {
-    // console.log(users[user].email);
     if (email === users[user].email) {
-      res.status(400).send("That email already exists. Please sign in, or create an account with another email address.")
-      
+      res.status(400).send("That email already exists. Please sign in, or create an account with another email address.");
+
       return;
     }
   }
@@ -94,15 +93,15 @@ app.post("/register", (req, res) => {
     email: email,
     password: password
   };
-    res.cookie("user_id", users[randomID].id),
-    res.redirect("/urls"), console.log(users);
-    return;
+  res.cookie("user_id", users[randomID].id),
+  res.redirect("/urls"), console.log(users);
+  return;
 });
 
 
 
 app.get("/urls", (req, res) => {
-  // console.log(req.cookies) 
+  // console.log(req.cookies)
   const user_id = req.cookies["user_id"];
   const templateVars = { urls: urlDatabase, user: users[user_id] };
   res.render("urls_index", templateVars);
@@ -118,19 +117,39 @@ app.get("/urls/new", (req, res) => {
 app.get("/login", (req, res) => {
   const user_id = req.cookies["user_id"];
   const templateVars = { user: users[user_id] };
+
   res.render("urls_login", templateVars);
 });
 
 app.post("/login", (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  // console.log(users)
 
-  res.redirect("/urls");
+  for (let user in users) {
+    if (email === users[user].email) {
+      // console.log(users[user])
+      if (password === users[user].password) {
+        const id = users[user].id;
+        // console.log(user)
+        res.cookie("user_id", id);
+        res.redirect("/urls");
+        return;
+      } else {
+        res.status(403).send("Incorrect Password.");
+        return;
+      }
+    }
+
+  }
+  res.status(403).send("That email does not match our records.");
 });
 
 
 
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id");
-  res.redirect("/urls");
+  res.redirect("/login");
 });
 
 app.post("/urls", (req, res) => {
