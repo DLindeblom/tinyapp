@@ -4,7 +4,7 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 ## Final Product
 
-!["Registration Page"]()
+!["Registration Page"](https://github.com/DLindeblom/tinyapp/blob/main/docs/registration-page.png?raw=true)
 
 This is a picture of where a new user will input their email and password to register to use tinyApp!
 
