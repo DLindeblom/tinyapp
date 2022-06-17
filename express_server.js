@@ -76,18 +76,6 @@ const urlsForUser = (userID) => {
   return urls;
 };
 
-// const getUserByEmail = (email, database) => {
-
-//   for (let user in database) {
-//     console.log(user);
-//     if (email === database[user].email) {
-//       // console.log(email)
-//       console.log(database[user].email);
-//       return database[user];
-//     }
-//   }
-// };
-
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -130,7 +118,6 @@ app.post("/register", (req, res) => {
 
   res.status(400).send("That email already exists. Please sign in, or create an account with another email address.");
   return;
-
 });
 
 app.get("/urls", (req, res) => {
@@ -138,6 +125,7 @@ app.get("/urls", (req, res) => {
   if (!userID) {
     return res.redirect("/error");
   }
+
   const urls = urlsForUser(userID);
 
   const templateVars = {
