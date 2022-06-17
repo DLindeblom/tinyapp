@@ -4,11 +4,11 @@ TinyApp is a full stack web application built with Node and Express that allows 
 
 ## Final Product
 
-!["Registration Page"](#)
+!["Registration Page"]()
 
 This is a picture of where a new user will input their email and password to register to use tinyApp!
 
-!["URLs Page"](#)
+!["URLs Page"](https://github.com/DLindeblom/tinyapp/blob/main/docs/URLs-page.png?raw=true)
 
 This is a screenshot of the table where all the urls which are created by a user are stored.  As you can see, each tiny url contains a link to the long URL it is associated with. An edit button and delete button add extra functionality!
 
