@@ -114,7 +114,6 @@ app.post("/register", (req, res) => {
   }
 
   const user = getUserByEmail(email, users);
-
   if (!user) {
 
     users[randomID] = {
@@ -171,21 +170,20 @@ app.post("/login", (req, res) => {
   const password = req.body.password;
 
   const user = getUserByEmail(email, users);
-  // console.log(user)
   if (user) {
 
     if (!bcrypt.compareSync(password, user.password)) {
-      res.redirect("/error");
-      return;
+      return res.status(403).send("403 = Incorrect Password");
+      
 
     } else {
       req.session.userID = user.id;
       res.redirect("/urls");
-      return;
+      return
     }
   }
 
-  res.redirect('/register');
+  res.status(403).send("403 - Please enter a valid username and password.");
 });
 
 app.post("/logout", (req, res) => {
@@ -201,7 +199,7 @@ app.post("/urls", (req, res) => {
 
   const { longURL } = req.body;
   if (!longURL) {
-    return res.status(400).send("You need to enter a valid longURL");
+    return res.status(400).send(" 400 - You need to enter a valid longURL");
   }
 
   const shortURL = generateRandomString();
@@ -225,7 +223,7 @@ app.get("/urls/:shortURL", (req, res) => {
 app.post("/urls/:shortURL/delete", (req, res) => {
   const { userID } = req.session;
   if (!userID) {
-    return res.status(401).send("401 Unauthorized = You do not have permission to access this site. Please login.\n");
+    return res.status(401).send("401 Unauthorized - You do not have permission to access this site. Please login.\n");
   }
   delete urlDatabase[req.params.shortURL];
   res.redirect("/urls");
@@ -239,13 +237,13 @@ app.post("/urls/:shortURL", (req, res) => {
 
   const { longURL } = req.body;
   if (!longURL) {
-    return res.status(400).send("You need to enter a valid longURL");
+    return res.status(400).send("400 - You need to enter a valid longURL");
   }
 
   const { shortURL } = req.params;
   const urlBelongsToUser = urlDatabase[shortURL].userID === userID;
   if (!urlBelongsToUser) {
-    return res.status(403).send("You do not have permission to edit this URL.");
+    return res.status(403).send("403 - You do not have permission to edit this URL.");
   }
 
   urlDatabase[shortURL] = { longURL, userID };
