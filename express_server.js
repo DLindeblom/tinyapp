@@ -3,6 +3,7 @@ const bodyParser = require("body-parser");
 const cookies = require("cookie-parser");
 const bcrypt = require("bcryptjs");
 const cookieSession = require("cookie-session");
+const getUserByEmail = require("./helpers")
 
 const app = express();
 const PORT = 8080;
@@ -75,17 +76,17 @@ const urlsForUser = (userID) => {
   return urls;
 };
 
-const getUserByEmail = (email, database) => {
+// const getUserByEmail = (email, database) => {
 
-  for (let user in database) {
-    console.log(user);
-    if (email === database[user].email) {
-      // console.log(email)
-      console.log(database[user].email);
-      return database[user];
-    }
-  }
-};
+//   for (let user in database) {
+//     console.log(user);
+//     if (email === database[user].email) {
+//       // console.log(email)
+//       console.log(database[user].email);
+//       return database[user];
+//     }
+//   }
+// };
 
 
 app.get("/", (req, res) => {
@@ -183,7 +184,7 @@ app.post("/login", (req, res) => {
     }
   }
 
-  res.status(403).send("403 - Please enter a valid username and password.");
+  res.status(403).send("403 - Oops! Please check that you have typed a valid email address. If you don't have an account, register and then login.");
 });
 
 app.post("/logout", (req, res) => {
